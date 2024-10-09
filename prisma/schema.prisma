@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  address     String
+  phone       String    @unique
+  email       String    @unique
+  password    String
+  gdpr        DateTime  @default(now())
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  is_active   Boolean   @default(false) 
+  token       String?
+  role_id     Int
+
+  role        Role      @relation(fields: [role_id], references: [id])
+  appointments Appointment[]
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String
+
+  users User[]
+}
+
+model Nail_service {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String      @db.Text
+  duration    Int
+  price       Int         
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id              Int          @id @default(autoincrement())
+  date_time       DateTime
+  client_id       Int
+  nail_service_id Int
+  client          User            @relation(fields: [client_id], references: [id])
+  nail_service    Nail_service    @relation(fields: [nail_service_id], references: [id])
+}
+
+model Image_gallery {
+  id        Int      @id @default(autoincrement())
+  image_url String
+}

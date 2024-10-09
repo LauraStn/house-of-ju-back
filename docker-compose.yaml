@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  jsbeauty-db:
+    image: mysql:8
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: j16s08fa1997
+      MYSQL_DATABASE: jsbeauty-db
+      MYSQL_USER: juju
+      MYSQL_PASSWORD: j16s08fa1997
+    networks:
+      - finalprojet
+  test-db:
+    image: mysql:8
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: test-db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    networks:
+      - finalprojet
+networks:
+  finalprojet:
+    external: true
