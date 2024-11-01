@@ -1,4 +1,11 @@
-import { Body, Controller, Delete, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
@@ -20,18 +27,18 @@ export class UserController {
   @UseGuards(JwtGuard)
   @Get('/one')
   getOneUser(@GetUser() user: User) {
-    return this.userService.getOneUser(user.id)
+    return this.userService.getOneUser(user.id);
   }
 
   @UseGuards(JwtGuard)
   @Patch('/update')
-  udpateUser(@GetUser() user: User, @Body() dto: UpdtateUserDto){
-    return this.userService.updateUser(user.id, dto)
+  udpateUser(@GetUser() user: User, @Body() dto: UpdtateUserDto) {
+    return this.userService.updateUser(user.id, dto);
   }
 
   @UseGuards(JwtGuard)
   @Delete('/delete')
   deleteUser(@GetUser() user: User) {
-    return this.userService.deleteUser(user.id)
+    return this.userService.deleteUser(user.id);
   }
 }

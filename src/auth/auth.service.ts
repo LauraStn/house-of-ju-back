@@ -6,6 +6,7 @@ import * as argon from 'argon2';
 import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { SigninDto } from './dto/auth-signin-dto';
+import { ResetPasswordDto } from './dto/reset-password-dto';
 
 @Injectable()
 export class AuthService {
@@ -78,6 +79,7 @@ export class AuthService {
     const token = await this.signToken(user.id);
     return {
       token,
+      isAdmin: user.role_id === 1,
       role: user.role_id,
     };
   }
@@ -96,5 +98,29 @@ export class AuthService {
     return {
       access_token: token,
     };
+  }
+  async resetPassword(dto: ResetPasswordDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+          email: dto.email,
+      },
+    });
+    if (!existingUser) {
+      throw new ForbiddenException('Email not found');
+    }
+    const activationToken = await argon.hash(
+      `${existingUser.email}+${existingUser.phone}`,
+    );
+    const cleanToken = activationToken.replaceAll('/', '');
+    const udpateUserToken = await this.prisma.user.update({
+      where: {
+        email: existingUser.email,
+      },
+      data: {
+        token: cleanToken,
+      },
+    });
+    await this.emailService.sendResetPassword(existingUser, cleanToken);
+    return 'Email sent with link to reset your password';
   }
 }

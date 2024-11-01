@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment-dto';
 import { User } from '@prisma/client';
@@ -12,6 +12,29 @@ export class AppointmentController {
   @UseGuards(JwtGuard)
   @Post('/add')
   createAppointment(@GetUser() user: User, @Body() dto: CreateAppointmentDto) {
-    return this.appointmentService.createAppointment(user.id, dto)
+    return this.appointmentService.createAppointment(user.id, dto);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('/user')
+  getAllUserAppointments(@GetUser() user: User) {
+    return this.appointmentService.getAllUserAppointment(user.id);
+  }
+
+  @Get('/all')
+  getAllAppointments() {
+    return this.appointmentService.getAllAppointments();
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch('/update/:id')
+  updateAppointment(@GetUser() user: User, @Body() dto: CreateAppointmentDto, @Param('id') appointmentId: string,) {
+    return this.appointmentService.updateAppointment(user.id, dto, Number(appointmentId))
+  }
+  
+  @UseGuards(JwtGuard)
+  @Patch('/delete/:id')
+  deleteAppointment(@GetUser() user: User, @Param('id') appointmentId: string,) {
+    return this.appointmentService.deleteAppointment(user.id, Number(appointmentId))
   }
 }

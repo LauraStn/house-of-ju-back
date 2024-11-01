@@ -13,10 +13,10 @@ export class ImageGalleryController {
   @UseGuards(JwtGuard)
   @Post('/add')
   addImageToGallery(@GetUser() user: User, @Body() dto: ImageGalleryDto) {
+    
     return this.imageGalleryService.addImageToGalery(user.id, dto)
   }
   
-  @UseGuards(JwtGuard)
   @Get('all')
   getAllImages() {
     return this.imageGalleryService.getAllImages()

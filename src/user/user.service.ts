@@ -31,7 +31,7 @@ export class UserService {
     }
 
     async getOneUser(userId: number) {
-        return this.prisma.user.findUnique({
+        const userLogged = await this.prisma.user.findUnique({
             where: {
                 id: userId
             },
@@ -47,6 +47,7 @@ export class UserService {
                 appointments: true
               },
         })
+        return {...userLogged, isAdmin: userLogged.role_id === 1 }
     }
 
     async updateUser(userId: number, dto: UpdtateUserDto){

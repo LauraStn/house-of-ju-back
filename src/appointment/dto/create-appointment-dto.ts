@@ -1,15 +1,21 @@
-import { Type } from "class-transformer";
-import { IsDate, IsNotEmpty, IsNumber } from "class-validator";
-
+import { Type } from 'class-transformer';
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateAppointmentDto {
+  @IsString()
+  @IsNotEmpty()
+  date: string;
 
-    @IsDate()
-    @IsNotEmpty()
-    @Type(() => Date)
-    date_time: Date
+  @IsNumber()
+  start: number;
 
-    @IsNotEmpty()
-    @IsNumber()
-    nail_service_id: number
+  @IsNumber()
+  end: number;
+
+  @IsNumber()
+  duration: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  nail_service_id: number;
 }
