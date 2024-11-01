@@ -34,10 +34,11 @@ export class EmailService {
   }
 
   async sendResetPassword(user: User, token: string) {
-    const url = `${this.config.get('SERVER_URL')}/user/redirectPassword/${token}`;
+    const url = `http://localhost:3000/changer-mot-de-passe/${token}`;
     const emailHtml = `<p>Hey ${user.first_name},</p>
-        <p>Someone (probably you) requested to reset the password to your account.</p>
-           <p> If you didn\'t submit this request, ignore this email, and your password will not be changed. Please click on this link:<a href='${url}'>Reset Password</a></p>`;
+        <p>Quelqu'un (probablement vous) a demandé à réinitialiser le mot de passe de votre compte.</p>
+<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>
+`;
 
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),

@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { NailServiceService } from './nail_service.service';
 import { JwtGuard } from 'src/auth/guard';
 import { GetUser } from 'src/auth/decorator';
@@ -11,15 +20,8 @@ export class NailServiceController {
 
   @UseGuards(JwtGuard)
   @Post('/add')
-  createNailService(@GetUser() user: User, @Body() dto: NailServiceDto){
-    return this.nailServiceService.createNailService(user.id, dto)
-  }
-
-  @UseGuards(JwtGuard)
-  @Patch('/update/:id')
-  updateNailService(@GetUser() user: User, @Body() dto: NailServiceDto, @Param('id') nailServiceId: string){
-    console.log(user);
-    return this.nailServiceService.updateNailService(user.id, dto, Number(nailServiceId))
+  createNailService(@GetUser() user: User, @Body() dto: NailServiceDto) {
+    return this.nailServiceService.createNailService(user.id, dto);
   }
 
   @Get('/all')
@@ -28,15 +30,30 @@ export class NailServiceController {
   }
 
   @Get('/one/:id')
-  getOneProduct(@Param('id') nailServiceId: string,
-  ) {
+  getOneProduct(@Param('id') nailServiceId: string) {
     return this.nailServiceService.getOneNailService(Number(nailServiceId));
   }
 
   @UseGuards(JwtGuard)
-  @Delete('/delete/:id')
-  deleteProduct(@GetUser() user: User, @Param('id') nailServiceId: string,
+  @Patch('/update/:id')
+  updateNailService(
+    @GetUser() user: User,
+    @Body() dto: NailServiceDto,
+    @Param('id') nailServiceId: string,
   ) {
-    return this.nailServiceService.deleteNailService(user.id, Number(nailServiceId));
+    return this.nailServiceService.updateNailService(
+      user.id,
+      dto,
+      Number(nailServiceId),
+    );
+  }
+
+  @UseGuards(JwtGuard)
+  @Delete('/delete/:id')
+  deleteProduct(@GetUser() user: User, @Param('id') nailServiceId: string) {
+    return this.nailServiceService.deleteNailService(
+      user.id,
+      Number(nailServiceId),
+    );
   }
 }

@@ -5,79 +5,83 @@ import { NailServiceDto } from './dto/nail-service-dto';
 
 @Injectable()
 export class NailServiceService {
-    constructor(
-        private prisma: PrismaService,
-      ) {}
-    
-      async createNailService(userId: number, dto: NailServiceDto){
-        await checkuserIsAdmin(userId)
+  constructor(private prisma: PrismaService) {}
 
-       const newNailService = await this.prisma.nail_service.create({
-        data:{
-          ...dto
-        }
-       })
-       return newNailService
-      }
+  async createNailService(userId: number, dto: NailServiceDto) {
+    await checkuserIsAdmin(userId);
 
-      async updateNailService(userId: number, dto: NailServiceDto, nailServiceId: number){
-        await checkuserIsAdmin(userId)
+    const newNailService = await this.prisma.nail_service.create({
+      data: {
+        ...dto,
+      },
+    });
+    return newNailService;
+  }
 
-        const existingNailService = await this.prisma.nail_service.findUnique({
-          where: {
-            id: nailServiceId
-          },
-        })
-        if (!existingNailService || !existingNailService.id) {
-          throw new ForbiddenException('Not found');
-        }
-        const updateExistingNailService = await this.prisma.nail_service.update({
-          where: {
-            id: existingNailService.id
-          }, data: {
-            name: dto.name,
-            description: dto.description,
-            duration: dto.duration,
-            price: dto.price
-          }
-        })
-        return updateExistingNailService
-      }
+  async updateNailService(
+    userId: number,
+    dto: NailServiceDto,
+    nailServiceId: number,
+  ) {
+    await checkuserIsAdmin(userId);
 
-      getAllNailServices() {
-        return this.prisma.nail_service.findMany({
-          orderBy: {
-            name: 'desc',
-          },
-          skip: 0,
-          take: 40,
-        });
-      }
-    
-      async getOneNailService(nailServiceId: number) {
-        return this.prisma.nail_service.findUnique({
-          where: {
-            id: nailServiceId,
-          },
-        });
-      }
+    const existingNailService = await this.prisma.nail_service.findUnique({
+      where: {
+        id: nailServiceId,
+      },
+    });
+    if (!existingNailService || !existingNailService.id) {
+      throw new ForbiddenException('Not found');
+    }
+    const updateExistingNailService = await this.prisma.nail_service.update({
+      where: {
+        id: existingNailService.id,
+      },
+      data: {
+        name: dto.name,
+        description: dto.description,
+        duration: dto.duration,
+        price: dto.price,
+      },
+    });
+    console.log('qerg');
+    return updateExistingNailService;
+  }
 
-      async deleteNailService(userId: number, nailServiceId: number) {
-        await checkuserIsAdmin(userId)
+  getAllNailServices() {
+    return this.prisma.nail_service.findMany({
+      orderBy: {
+        id: 'asc',
+      },
+      skip: 0,
+      take: 40,
+    });
+  }
 
-        const existingNailService = await this.prisma.nail_service.findUnique({
-          where: {
-            id: nailServiceId
-          }
-        })
-        if (!existingNailService || !existingNailService.id) {
-          throw new ForbiddenException('Not found');
-        }
-        await this.prisma.nail_service.delete({
-          where: {
-            id: existingNailService.id
-          }
-        })
-        return "Deleted"
-      }
+  async getOneNailService(nailServiceId: number) {
+    return this.prisma.nail_service.findUnique({
+      where: {
+        id: nailServiceId,
+      },
+    });
+  }
+
+  async deleteNailService(userId: number, nailServiceId: number) {
+    await checkuserIsAdmin(userId);
+
+    const existingNailService = await this.prisma.nail_service.findUnique({
+      where: {
+        id: nailServiceId,
+      },
+    });
+    if (!existingNailService || !existingNailService.id) {
+      throw new ForbiddenException('Not found');
+    }
+    await this.prisma.nail_service.delete({
+      where: {
+        id: existingNailService.id,
+      },
+    });
+    return 'Deleted';
+  }
 }

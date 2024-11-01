@@ -5,43 +5,43 @@ import { checkuserIsAdmin } from 'src/utils/checkRole';
 
 @Injectable()
 export class ImageGalleryService {
-    constructor(
-        private prisma: PrismaService,
-      ) {}
+  constructor(private prisma: PrismaService) {}
 
-      async addImageToGalery(userId: number, dto:ImageGalleryDto){
-        await checkuserIsAdmin(userId)
+  async addImageToGalery(userId: number, dto: ImageGalleryDto) {
+    await checkuserIsAdmin(userId);
 
-        const newImage = await this.prisma.image_gallery.create({
-            data: {
-                ...dto
-            }
-        })
-        return newImage
-      }
+    const newImage = await this.prisma.image_gallery.create({
+      data: {
+        ...dto,
+      },
+    });
+    console.log(newImage);
 
-      getAllImages() {
-        return this.prisma.image_gallery.findMany({
-            take:20
-        })
-      }
+    return newImage;
+  }
 
-      async deleteImage(userId: number, imageId: number) {
-        await checkuserIsAdmin(userId)
+  getAllImages() {
+    return this.prisma.image_gallery.findMany({
+      take: 20,
+    });
+  }
 
-        const existingImage = await this.prisma.image_gallery.findUnique({
-            where: {
-                id: imageId
-            }
-        })
-        if (!existingImage || !existingImage.id) {
-            throw new ForbiddenException('does not exist');
-        }
-        await this.prisma.image_gallery.delete({
-            where:{
-                id: existingImage.id
-            }
-        })
-        return "Image deleted"
-      }
+  async deleteImage(userId: number, imageId: number) {
+    await checkuserIsAdmin(userId);
+
+    const existingImage = await this.prisma.image_gallery.findUnique({
+      where: {
+        id: imageId,
+      },
+    });
+    if (!existingImage || !existingImage.id) {
+      throw new ForbiddenException('does not exist');
+    }
+    await this.prisma.image_gallery.delete({
+      where: {
+        id: existingImage.id,
+      },
+    });
+    return 'Image deleted';
+  }
 }
