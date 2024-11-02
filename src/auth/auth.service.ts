@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignupDto } from './dto/auth-signup-dto';
@@ -15,57 +19,109 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
     private emailService: EmailService,
-
   ) {}
 
-  async signup(dto: SignupDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
-    });
-    if (existingUser) {
-      throw new ForbiddenException('Email already taken');
-    }
-    const hash = await argon.hash(dto.password);
-    const userRole = await this.prisma.role.findUnique({
-      where: {
-        id: 2,
-      },
-    });
-    const existingPhone = await this.prisma.user.findUnique({
-      where: {
-        phone: dto.phone,
-      },
-    });
-    if (existingPhone) {
-      throw new ForbiddenException('Phone number already taken');
-    }
-    const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
-    const cleanToken = activationToken.replaceAll('/', 'j');
+  // async signup(dto: SignupDto) {
+  //   const existingUser = await this.prisma.user.findUnique({
+  //     where: {
+  //       email: dto.email,
+  //     },
+  //   });
+  //   if (existingUser) {
+  //     throw new ForbiddenException('Email already taken');
+  //   }
+  //   const hash = await argon.hash(dto.password);
+  //   const userRole = await this.prisma.role.findUnique({
+  //     where: {
+  //       id: 1,
+  //     },
+  //   });
+  //   const existingPhone = await this.prisma.user.findUnique({
+  //     where: {
+  //       phone: dto.phone,
+  //     },
+  //   });
+  //   if (existingPhone) {
+  //     throw new ForbiddenException('Phone number already taken');
+  //   }
+  //   const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
+  //   const cleanToken = activationToken.replaceAll('/', 'j');
 
-    const newUser = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        first_name: dto.first_name,
-        last_name: dto.last_name,
-        address: dto.address,
-        phone: dto.phone,
-        role_id: userRole.id,
-        password: hash,
-        token: cleanToken,
-      },
-    });
-    await this.emailService.sendUserConfirmation(newUser, cleanToken);
-    return 'Email sent with link to activate your account';
+  //   const newUser = await this.prisma.user.create({
+  //     data: {
+  //       email: dto.email,
+  //       first_name: dto.first_name,
+  //       last_name: dto.last_name,
+  //       address: dto.address,
+  //       phone: dto.phone,
+  //       role_id: userRole.id,
+  //       password: hash,
+  //       token: cleanToken,
+  //     },
+  //   });
+  //   await this.emailService.sendUserConfirmation(newUser, cleanToken);
+  //   return 'Email sent with link to activate your account';
+  // }
+  async signup(dto: SignupDto) {
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
+        },
+      });
+      if (existingUser) {
+        throw new ForbiddenException('Email already taken');
+      }
+
+      const hash = await argon.hash(dto.password);
+      const userRole = await this.prisma.role.findUnique({
+        where: {
+          id: 1,
+        },
+      });
+
+      const existingPhone = await this.prisma.user.findUnique({
+        where: {
+          phone: dto.phone,
+        },
+      });
+      if (existingPhone) {
+        throw new ForbiddenException('Phone number already taken');
+      }
+
+      const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
+      const cleanToken = activationToken.replaceAll('/', 'j');
+
+      const newUser = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          first_name: dto.first_name,
+          last_name: dto.last_name,
+          address: dto.address,
+          phone: dto.phone,
+          role_id: userRole.id,
+          password: hash,
+          token: cleanToken,
+        },
+      });
+
+      await this.emailService.sendUserConfirmation(newUser, cleanToken);
+      return 'Email sent with link to activate your account';
+    } catch (error) {
+      // Ici, tu peux gérer l'erreur comme tu le souhaites
+      // Par exemple, tu peux relancer l'erreur ou en créer une nouvelle
+      throw new InternalServerErrorException(
+        'An error occurred during signup process',
+      );
+    }
   }
 
-  async signin(dto: SigninDto){
+  async signin(dto: SigninDto) {
     const user = await this.prisma.user.findUnique({
       where: {
-        email: dto.email
-      }
-    })
+        email: dto.email,
+      },
+    });
     if (!user) {
       throw new ForbiddenException('Invalid crendentials');
     }
@@ -79,7 +135,7 @@ export class AuthService {
     const token = await this.signToken(user.id);
     return {
       token,
-      isAdmin: user.role_id === 1,
+      isAdmin: user.role_id === 2,
       role: user.role_id,
     };
   }
@@ -102,7 +158,7 @@ export class AuthService {
   async resetPassword(dto: ResetPasswordDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
-          email: dto.email,
+        email: dto.email,
       },
     });
     if (!existingUser) {
