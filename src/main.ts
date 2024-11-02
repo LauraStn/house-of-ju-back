@@ -10,6 +10,8 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-  await app.listen(3003);
+  app.listen(3003, '0.0.0.0', () => {
+    console.log('Server running on port 3003');
+  });
 }
 bootstrap();
