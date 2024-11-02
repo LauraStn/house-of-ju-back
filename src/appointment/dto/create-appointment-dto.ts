@@ -6,11 +6,11 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   date: string;
 
-  @IsNumber()
-  start: number;
+  @IsString()
+  start: string;
 
-  @IsNumber()
-  end: number;
+  @IsString()
+  end: string;
 
   @IsNumber()
   duration: number;
