@@ -46,8 +46,8 @@ model Nail_service {
 model Appointment {
   id              Int          @id @default(autoincrement())
   date            String
-  start           Int
-  end             Int
+  start           String
+  end             String
   duration        Int
   client_id       Int
   nail_service_id Int
