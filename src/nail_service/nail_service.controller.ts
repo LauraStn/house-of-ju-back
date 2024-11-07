@@ -25,8 +25,8 @@ export class NailServiceController {
   }
 
   @Get('/all')
-  getAllProduct() {
-    return this.nailServiceService.getAllNailServices();
+  async getAllProduct() {
+    return await this.nailServiceService.getAllNailServices();
   }
 
   @Get('/one/:id')

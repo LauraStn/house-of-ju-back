@@ -44,18 +44,11 @@ export class NailServiceService {
         price: dto.price,
       },
     });
-    console.log('qerg');
     return updateExistingNailService;
   }
 
-  getAllNailServices() {
-    return this.prisma.nail_service.findMany({
-      orderBy: {
-        id: 'asc',
-      },
-      skip: 0,
-      take: 40,
-    });
+  async getAllNailServices() {
+    return await this.prisma.$queryRaw`SELECT * FROM Nail_service`;
   }
 
   async getOneNailService(nailServiceId: number) {

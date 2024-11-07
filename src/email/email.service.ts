@@ -19,16 +19,15 @@ export class EmailService {
   }
 
   async sendUserConfirmation(user: User, token: string) {
-    const url = `${this.config.get('SERVER_URL')}/auth/validate/${token}`;
-    const emailHtml = `<p>Hey ${user.first_name},</p>
-        <p>Your requested an account creation on wicromania</p>
-            <a href='${url}'>You requested an account creation on wicromania, click here 
-            to activate your account</a>`;
+    const url = `${this.config.get('SERVER_URL')}/auth/activate/${token}`;
+    const emailHtml = `<p>Bonjour ${user.first_name},</p>
+        <p>Voici le lien pour activer votre compte sur le site House Of Ju</p>
+            <a href='${url}'>Activer votre compte</a>`;
 
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),
       to: user.email,
-      subject: 'Welcome user! Confirm your Email',
+      subject: 'House Of Ju! Confirmez votre Email',
       html: emailHtml,
     });
   }
@@ -43,7 +42,7 @@ export class EmailService {
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),
       to: user.email,
-      subject: 'Reset password',
+      subject: 'House of Ju - Réinitialiser le mot de passe',
       html: emailHtml,
     });
   }

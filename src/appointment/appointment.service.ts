@@ -37,25 +37,28 @@ export class AppointmentService {
         nail_service_id: existingNailService.id,
       },
     });
-    return newAppointment;
+    return {
+      success:true,
+      message:"Rendez-vous validé avec succés"
+    };
   }
 
-  async getAllUserAppointment(userId: number) {
+  async getAllUserAppointments(userId: number) {
     const allAppointments = await this.prisma.appointment.findMany({
       where: {
-        id: userId,
+        client_id: userId,
       },
     });
     return allAppointments;
   }
 
   async getAllAppointments() {
-    const allAppointmentsForAdmin = await this.prisma.appointment.findMany({
+    const allAppointments = await this.prisma.appointment.findMany({
       orderBy: {
         id: 'desc',
       },
     });
-    return allAppointmentsForAdmin;
+    return allAppointments;
   }
 
   async updateAppointment(
@@ -93,6 +96,7 @@ export class AppointmentService {
         ...dto,
       },
     });
+    return editAppointment
   }
 
   async deleteAppointment(
