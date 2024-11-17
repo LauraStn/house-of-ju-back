@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -30,10 +31,10 @@ export class AuthService {
     if (existingUser) {
       throw new ForbiddenException('Email already taken');
     }
-    const hash = await argon.hash(dto.password);
+
     const userRole = await this.prisma.role.findUnique({
       where: {
-        id: 1,
+        id: 2,
       },
     });
     const existingPhone = await this.prisma.user.findUnique({
@@ -47,6 +48,7 @@ export class AuthService {
     const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
     const cleanToken = activationToken.replaceAll('/', 'j');
 
+    const hashedPassword = await argon.hash(dto.password);
     const newUser = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -55,7 +57,7 @@ export class AuthService {
         address: dto.address,
         phone: dto.phone,
         role_id: userRole.id,
-        password: hash,
+        password: hashedPassword,
         token: cleanToken,
       },
     });
@@ -70,19 +72,20 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new ForbiddenException('Invalid crendentials');
+      throw new ForbiddenException('Email inconnu');
     }
     if (user.is_active === false) {
-      throw new ForbiddenException('Inactive account');
+      throw new ForbiddenException('Compte inactif');
     }
     const isValidPassword = await argon.verify(user.password, dto.password);
     if (!isValidPassword) {
-      throw new ForbiddenException('Invalid crendentials');
+      throw new ForbiddenException('Mot de passe incorrect');
     }
+
     const token = await this.signToken(user.id);
     return {
       token,
-      isAdmin: user.role_id === 2,
+      isAdmin: user.role_id === 1,
       role: user.role_id,
     };
   }
@@ -91,17 +94,16 @@ export class AuthService {
     const payload = {
       sub: userId,
     };
-
     const secret = this.config.get('JWT_SECRET');
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '30d',
+      expiresIn: '1d',
       secret: secret,
     });
-
     return {
       access_token: token,
     };
   }
+
   async activateAccount(token: string) {
     const existingUser = await this.prisma.user.findFirst({
       where: {

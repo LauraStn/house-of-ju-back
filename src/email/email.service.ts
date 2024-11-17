@@ -36,13 +36,12 @@ export class EmailService {
     const url = `http://localhost:3000/changer-mot-de-passe/${token}`;
     const emailHtml = `<p>Hey ${user.first_name},</p>
         <p>Quelqu'un (probablement vous) a demandé à réinitialiser le mot de passe de votre compte.</p>
-<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>
-`;
+        <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>`;
 
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),
       to: user.email,
-      subject: 'House of Ju - Réinitialiser le mot de passe',
+      subject: 'House of Ju - Réinitialiser votre mot de passe',
       html: emailHtml,
     });
   }

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment-dto';
+import { checkuserIsAdmin } from 'src/utils/checkRole';
 
 @Injectable()
 export class AppointmentService {
@@ -38,29 +39,34 @@ export class AppointmentService {
       },
     });
     return {
-      success:true,
-      message:"Rendez-vous validé avec succés"
+      success: true,
+      message: 'Rendez-vous validé',
     };
   }
 
   async getAllUserAppointments(userId: number) {
-    const allAppointments = await this.prisma.appointment.findMany({
-      where: {
-        client_id: userId,
-      },
-    });
+    const id = userId;
+    const allAppointments = await this.prisma
+      .$queryRaw`SELECT * FROM Appointment JOIN Nail_service ON Appointment.nail_service_id = Nail_service.id WHERE Appointment.client_id = ${id}`;
     return allAppointments;
   }
 
   async getAllAppointments() {
     const allAppointments = await this.prisma.appointment.findMany({
       orderBy: {
-        id: 'desc',
+        id: 'asc',
       },
     });
     return allAppointments;
   }
 
+  async getAllAppointmentForAdmin(userId: number) {
+    await checkuserIsAdmin(userId);
+    const allAppointmentsForAdmin = await this.prisma
+      .$queryRaw`SELECT * FROM Appointment JOIN Nail_service ON Appointment.nail_service_id = Nail_service.id JOIN User ON Appointment.client_id = User.id ORDER BY Appointment.date ASC`;
+    return allAppointmentsForAdmin;
+  }
+  
   async updateAppointment(
     userId: number,
     dto: CreateAppointmentDto,
@@ -96,13 +102,10 @@ export class AppointmentService {
         ...dto,
       },
     });
-    return editAppointment
+    return editAppointment;
   }
 
-  async deleteAppointment(
-    userId: number,
-    appointmentId: number,
-  ) {
+  async deleteAppointment(userId: number, appointmentId: number) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -125,7 +128,7 @@ export class AppointmentService {
     ) {
       throw new UnauthorizedException('You are not allowed');
     }
-     await this.prisma.appointment.delete({
+    await this.prisma.appointment.delete({
       where: {
         id: existinAppointment.id,
       },

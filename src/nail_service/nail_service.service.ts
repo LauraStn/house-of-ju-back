@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { checkuserIsAdmin } from 'src/utils/checkRole';
+import { checkuserIsAdmin } from '../utils/checkRole';
 import { NailServiceDto } from './dto/nail-service-dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NailServiceService {
@@ -9,13 +9,15 @@ export class NailServiceService {
 
   async createNailService(userId: number, dto: NailServiceDto) {
     await checkuserIsAdmin(userId);
-
     const newNailService = await this.prisma.nail_service.create({
       data: {
         ...dto,
       },
     });
-    return newNailService;
+    return {
+      success: true,
+      message: 'Prestation ajoutée',
+    };
   }
 
   async updateNailService(
@@ -44,7 +46,10 @@ export class NailServiceService {
         price: dto.price,
       },
     });
-    return updateExistingNailService;
+    return {
+      success: true,
+      message: 'Prestation modifiée',
+    };
   }
 
   async getAllNailServices() {
@@ -75,6 +80,9 @@ export class NailServiceService {
         id: existingNailService.id,
       },
     });
-    return 'Deleted';
+    return {
+      success: true,
+      message: 'Prestation supprimée',
+    };
   }
 }

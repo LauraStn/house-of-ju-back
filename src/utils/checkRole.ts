@@ -63,25 +63,21 @@ export async function checkUserHasAccount(jwtId: number) {
 }
 
 export async function checkuserIsAdmin(jwtId: number) {
-  if (jwtId) {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: jwtId,
-        is_active: true,
-      },
-      include: {
-        role: true,
-      },
-    });
-
-    if (!user || !user.id) {
-      throw new ForbiddenException('Access to resources denied2');
-    }
-
-    if (user.role.name !== Roles.ADMIN) {
-      throw new ForbiddenException('Access to resources denied3');
-    }
-  } else {
-    throw new ForbiddenException('Access to resources denied4');
+  if (!jwtId) {
+    throw new ForbiddenException('ok');
   }
+  const user = await prisma.user.findUnique({
+    where: {
+      id: jwtId,
+      is_active: true,
+    },
+    include: {
+      role: true,
+    },
+  });
+
+  if (user.role.name !== Roles.ADMIN) {
+    throw new ForbiddenException('Access to resources denied3');
+  }
+  return user;
 }

@@ -16,12 +16,9 @@ import { JwtGuard } from 'src/auth/guard';
 @Controller('appointment')
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
-
   @UseGuards(JwtGuard)
   @Post('/add')
   createAppointment(@GetUser() user: User, @Body() dto: CreateAppointmentDto) {
-    console.log(dto);
-
     return this.appointmentService.createAppointment(user.id, dto);
   }
 
@@ -29,6 +26,12 @@ export class AppointmentController {
   @Get('/user')
   getAllUserAppointments(@GetUser() user: User) {
     return this.appointmentService.getAllUserAppointments(user.id);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('/admin')
+  getAllAppointmentForAmdin(@GetUser() user: User) {
+    return this.appointmentService.getAllAppointmentForAdmin(user.id);
   }
 
   @Get('/all')
