@@ -31,7 +31,7 @@ export class AppointmentController {
   @UseGuards(JwtGuard)
   @Get('/admin')
   getAllAppointmentForAmdin(@GetUser() user: User) {
-    return this.appointmentService.getAllAppointmentForAdmin(user.id);
+    return this.appointmentService.getAllAppointmentsForAdmin(user.id);
   }
 
   @Get('/all')

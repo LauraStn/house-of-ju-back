@@ -48,6 +48,8 @@ export class AppointmentService {
     const id = userId;
     const allAppointments = await this.prisma
       .$queryRaw`SELECT * FROM Appointment JOIN Nail_service ON Appointment.nail_service_id = Nail_service.id WHERE Appointment.client_id = ${id}`;
+    console.log(allAppointments);
+
     return allAppointments;
   }
 
@@ -57,16 +59,26 @@ export class AppointmentService {
         id: 'asc',
       },
     });
+    console.log(allAppointments);
+
     return allAppointments;
   }
 
-  async getAllAppointmentForAdmin(userId: number) {
+  async getAllAppointmentsForAdmin(userId: number) {
     await checkuserIsAdmin(userId);
-    const allAppointmentsForAdmin = await this.prisma
-      .$queryRaw`SELECT * FROM Appointment JOIN Nail_service ON Appointment.nail_service_id = Nail_service.id JOIN User ON Appointment.client_id = User.id ORDER BY Appointment.date ASC`;
+    const allAppointmentsForAdmin = await this.prisma.$queryRaw`
+      SELECT *
+      FROM Appointment 
+      JOIN Nail_service 
+      ON Appointment.nail_service_id = Nail_service.id 
+      JOIN User 
+      ON Appointment.client_id = User.id 
+      ORDER BY Appointment.date ASC`;
+    console.log(allAppointmentsForAdmin);
+
     return allAppointmentsForAdmin;
   }
-  
+
   async updateAppointment(
     userId: number,
     dto: CreateAppointmentDto,

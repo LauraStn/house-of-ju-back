@@ -12,6 +12,7 @@ import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { SigninDto } from './dto/auth-signin-dto';
 import { ResetPasswordDto } from './dto/reset-password-dto';
+import { Roles } from 'src/utils/const/const';
 
 @Injectable()
 export class AuthService {
@@ -32,9 +33,9 @@ export class AuthService {
       throw new ForbiddenException('Email already taken');
     }
 
-    const userRole = await this.prisma.role.findUnique({
+    const userRole = await this.prisma.role.findFirst({
       where: {
-        id: 2,
+        name: Roles.USER,
       },
     });
     const existingPhone = await this.prisma.user.findUnique({

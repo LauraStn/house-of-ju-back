@@ -19,7 +19,7 @@ export class EmailService {
   }
 
   async sendUserConfirmation(user: User, token: string) {
-    const url = `${this.config.get('SERVER_URL')}/auth/activate/${token}`;
+    const url = `${this.config.get('WEBSITE_URL')}/activation/${token}`;
     const emailHtml = `<p>Bonjour ${user.first_name},</p>
         <p>Voici le lien pour activer votre compte sur le site House Of Ju</p>
             <a href='${url}'>Activer votre compte</a>`;
@@ -33,7 +33,7 @@ export class EmailService {
   }
 
   async sendResetPassword(user: User, token: string) {
-    const url = `http://localhost:3000/changer-mot-de-passe/${token}`;
+    const url = `${this.config.get('WEBSITE_URL')}/changer-mot-de-passe/${token}`;
     const emailHtml = `<p>Hey ${user.first_name},</p>
         <p>Quelqu'un (probablement vous) a demandé à réinitialiser le mot de passe de votre compte.</p>
         <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>`;
