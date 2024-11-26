@@ -51,6 +51,7 @@ export class AuthService {
     const activationToken = crypto.randomBytes(72).toString('hex');
 
     const hashedPassword = await argon.hash(dto.password);
+    console.log(activationToken);
 
     const newUser = await this.prisma.user.create({
       data: {
@@ -101,7 +102,7 @@ export class AuthService {
     };
     const secret = this.config.get('JWT_SECRET');
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '1d',
+      expiresIn: '30d',
       secret: secret,
     });
     return {

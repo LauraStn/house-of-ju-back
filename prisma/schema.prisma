@@ -9,18 +9,18 @@ datasource db {
 
 model User {
   id          Int       @id @default(autoincrement())
-  first_name  String
-  last_name   String
-  address     String
+  first_name  String    @db.VarChar(50)
+  last_name   String    @db.VarChar(50)
+  address     String    @db.VarChar(150)
   phone       String    @unique
   email       String    @unique
-  password    String
+  password    String    @db.VarChar(255)
   gdpr        DateTime  @default(now())
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   is_active   Boolean   @default(false) 
-  token       String?
-  role_id     Int
+  token       String?   @db.VarChar(200)
+  role_id     Int       
 
   role        Role      @relation(fields: [role_id], references: [id])
   appointments Appointment[]
@@ -28,26 +28,26 @@ model User {
 
 model Role {
   id    Int    @id @default(autoincrement())
-  name  String
+  name  String @db.VarChar(20)
 
   users User[]
 }
 
 model Nail_service {
   id          Int         @id @default(autoincrement())
-  name        String
+  name        String      @db.VarChar(70)
   description String      @db.Text
-  duration    Int
+  duration    Int         
   price       Int         
 
   appointments Appointment[]
 }
 
 model Appointment {
-  id              Int          @id @default(autoincrement())
-  date            String
-  start           String
-  end             String
+  id              Int             @id @default(autoincrement())
+  date            String         
+  start           String          
+  end             String         
   duration        Int
   client_id       Int
   nail_service_id Int
