@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -54,7 +55,7 @@ export class AppointmentController {
   }
 
   @UseGuards(JwtGuard)
-  @Patch('/delete/:id')
+  @Delete('/delete/:id')
   deleteAppointment(@GetUser() user: User, @Param('id') appointmentId: string) {
     return this.appointmentService.deleteAppointment(
       user.id,

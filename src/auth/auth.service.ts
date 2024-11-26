@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { SigninDto } from './dto/auth-signin-dto';
 import { ResetPasswordDto } from './dto/reset-password-dto';
 import { Roles } from 'src/utils/const/const';
-
+import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -30,7 +30,7 @@ export class AuthService {
       },
     });
     if (existingUser) {
-      throw new ForbiddenException('Email already taken');
+      throw new ForbiddenException('Cet email est déjà associé à un compte');
     }
 
     const userRole = await this.prisma.role.findFirst({
@@ -44,12 +44,14 @@ export class AuthService {
       },
     });
     if (existingPhone) {
-      throw new ForbiddenException('Phone number already taken');
+      throw new ForbiddenException(
+        'Ce numéro de téléphone est déjà associé à un compte',
+      );
     }
-    const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
-    const cleanToken = activationToken.replaceAll('/', 'j');
+    const activationToken = crypto.randomBytes(72).toString('hex');
 
     const hashedPassword = await argon.hash(dto.password);
+
     const newUser = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -59,11 +61,11 @@ export class AuthService {
         phone: dto.phone,
         role_id: userRole.id,
         password: hashedPassword,
-        token: cleanToken,
+        token: activationToken,
       },
     });
-    await this.emailService.sendUserConfirmation(newUser, cleanToken);
-    return 'Email sent with link to activate your account';
+    await this.emailService.sendUserConfirmation(newUser, activationToken);
+    return 'Veuillez cliquer sur le lien reçu par mail pour activer votre compte';
   }
 
   async signin(dto: SigninDto) {
@@ -85,6 +87,8 @@ export class AuthService {
 
     const token = await this.signToken(user.id);
     return {
+      statusCode: 201,
+      message: 'Connecté ! Redirection vers le profil',
       token,
       isAdmin: user.role_id === 1,
       role: user.role_id,
@@ -133,21 +137,24 @@ export class AuthService {
       },
     });
     if (!existingUser) {
-      throw new ForbiddenException('Email not found');
+      throw new ForbiddenException({
+        success: false,
+        message: 'Email introuvable',
+      });
     }
-    const activationToken = await argon.hash(
-      `${existingUser.email}+${existingUser.phone}`,
-    );
-    const cleanToken = activationToken.replaceAll('/', '');
+    const activationToken = crypto.randomBytes(72).toString('hex');
     const udpateUserToken = await this.prisma.user.update({
       where: {
         email: existingUser.email,
       },
       data: {
-        token: cleanToken,
+        token: activationToken,
       },
     });
-    await this.emailService.sendResetPassword(existingUser, cleanToken);
-    return 'Email sent with link to reset your password';
+    await this.emailService.sendResetPassword(existingUser, activationToken);
+    return {
+      success: true,
+      message: 'Un email de réinitialisation de mot de passe vous a été envoyé',
+    };
   }
 }
