@@ -25,12 +25,12 @@ export class NailServiceController {
   }
 
   @Get('/all')
-  getAllProduct() {
-    return this.nailServiceService.getAllNailServices();
+  async getAllNailServices() {
+    return await this.nailServiceService.getAllNailServices();
   }
 
   @Get('/one/:id')
-  getOneProduct(@Param('id') nailServiceId: string) {
+  getOneNailService(@Param('id') nailServiceId: string) {
     return this.nailServiceService.getOneNailService(Number(nailServiceId));
   }
 
@@ -50,7 +50,7 @@ export class NailServiceController {
 
   @UseGuards(JwtGuard)
   @Delete('/delete/:id')
-  deleteProduct(@GetUser() user: User, @Param('id') nailServiceId: string) {
+  deleteNailService(@GetUser() user: User, @Param('id') nailServiceId: string) {
     return this.nailServiceService.deleteNailService(
       user.id,
       Number(nailServiceId),

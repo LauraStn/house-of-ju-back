@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment-dto';
 import { User } from '@prisma/client';
@@ -8,7 +17,6 @@ import { JwtGuard } from 'src/auth/guard';
 @Controller('appointment')
 export class AppointmentController {
   constructor(private readonly appointmentService: AppointmentService) {}
-
   @UseGuards(JwtGuard)
   @Post('/add')
   createAppointment(@GetUser() user: User, @Body() dto: CreateAppointmentDto) {
@@ -18,7 +26,13 @@ export class AppointmentController {
   @UseGuards(JwtGuard)
   @Get('/user')
   getAllUserAppointments(@GetUser() user: User) {
-    return this.appointmentService.getAllUserAppointment(user.id);
+    return this.appointmentService.getAllUserAppointments(user.id);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('/admin')
+  getAllAppointmentForAmdin(@GetUser() user: User) {
+    return this.appointmentService.getAllAppointmentsForAdmin(user.id);
   }
 
   @Get('/all')
@@ -28,13 +42,24 @@ export class AppointmentController {
 
   @UseGuards(JwtGuard)
   @Patch('/update/:id')
-  updateAppointment(@GetUser() user: User, @Body() dto: CreateAppointmentDto, @Param('id') appointmentId: string,) {
-    return this.appointmentService.updateAppointment(user.id, dto, Number(appointmentId))
+  updateAppointment(
+    @GetUser() user: User,
+    @Body() dto: CreateAppointmentDto,
+    @Param('id') appointmentId: string,
+  ) {
+    return this.appointmentService.updateAppointment(
+      user.id,
+      dto,
+      Number(appointmentId),
+    );
   }
-  
+
   @UseGuards(JwtGuard)
-  @Patch('/delete/:id')
-  deleteAppointment(@GetUser() user: User, @Param('id') appointmentId: string,) {
-    return this.appointmentService.deleteAppointment(user.id, Number(appointmentId))
+  @Delete('/delete/:id')
+  deleteAppointment(@GetUser() user: User, @Param('id') appointmentId: string) {
+    return this.appointmentService.deleteAppointment(
+      user.id,
+      Number(appointmentId),
+    );
   }
 }

@@ -19,31 +19,29 @@ export class EmailService {
   }
 
   async sendUserConfirmation(user: User, token: string) {
-    const url = `${this.config.get('SERVER_URL')}/auth/validate/${token}`;
-    const emailHtml = `<p>Hey ${user.first_name},</p>
-        <p>Your requested an account creation on wicromania</p>
-            <a href='${url}'>You requested an account creation on wicromania, click here 
-            to activate your account</a>`;
+    const url = `${this.config.get('WEBSITE_URL')}/activation/${token}`;
+    const emailHtml = `<p>Bonjour ${user.first_name},</p>
+        <p>Voici le lien pour activer votre compte sur le site House Of Ju</p>
+            <a href='${url}'>Activer votre compte</a>`;
 
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),
       to: user.email,
-      subject: 'Welcome user! Confirm your Email',
+      subject: 'House Of Ju! Confirmez votre Email',
       html: emailHtml,
     });
   }
 
   async sendResetPassword(user: User, token: string) {
-    const url = `http://localhost:3000/changer-mot-de-passe/${token}`;
+    const url = `${this.config.get('WEBSITE_URL')}/changer-mot-de-passe/${token}`;
     const emailHtml = `<p>Hey ${user.first_name},</p>
         <p>Quelqu'un (probablement vous) a demandé à réinitialiser le mot de passe de votre compte.</p>
-<p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>
-`;
+        <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et votre mot de passe ne sera pas modifié. Veuillez cliquer sur ce lien : <a href='${url}'>Réinitialiser le mot de passe</a></p>`;
 
     await this.transporter.sendMail({
       from: this.config.get('SMTP_EMAIL'),
       to: user.email,
-      subject: 'Reset password',
+      subject: 'House of Ju - Réinitialiser votre mot de passe',
       html: emailHtml,
     });
   }

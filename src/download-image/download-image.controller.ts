@@ -34,6 +34,7 @@ export class DownloadImageController {
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+  
     return file.filename;
   }
 

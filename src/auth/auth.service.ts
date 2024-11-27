@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,7 +12,8 @@ import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { SigninDto } from './dto/auth-signin-dto';
 import { ResetPasswordDto } from './dto/reset-password-dto';
-
+import { Roles } from 'src/utils/const/const';
+import * as crypto from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -21,99 +23,50 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
-  // async signup(dto: SignupDto) {
-  //   const existingUser = await this.prisma.user.findUnique({
-  //     where: {
-  //       email: dto.email,
-  //     },
-  //   });
-  //   if (existingUser) {
-  //     throw new ForbiddenException('Email already taken');
-  //   }
-  //   const hash = await argon.hash(dto.password);
-  //   const userRole = await this.prisma.role.findUnique({
-  //     where: {
-  //       id: 1,
-  //     },
-  //   });
-  //   const existingPhone = await this.prisma.user.findUnique({
-  //     where: {
-  //       phone: dto.phone,
-  //     },
-  //   });
-  //   if (existingPhone) {
-  //     throw new ForbiddenException('Phone number already taken');
-  //   }
-  //   const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
-  //   const cleanToken = activationToken.replaceAll('/', 'j');
-
-  //   const newUser = await this.prisma.user.create({
-  //     data: {
-  //       email: dto.email,
-  //       first_name: dto.first_name,
-  //       last_name: dto.last_name,
-  //       address: dto.address,
-  //       phone: dto.phone,
-  //       role_id: userRole.id,
-  //       password: hash,
-  //       token: cleanToken,
-  //     },
-  //   });
-  //   await this.emailService.sendUserConfirmation(newUser, cleanToken);
-  //   return 'Email sent with link to activate your account';
-  // }
   async signup(dto: SignupDto) {
-    try {
-      const existingUser = await this.prisma.user.findUnique({
-        where: {
-          email: dto.email,
-        },
-      });
-      if (existingUser) {
-        throw new ForbiddenException('Email already taken');
-      }
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+    if (existingUser) {
+      throw new ForbiddenException('Cet email est déjà associé à un compte');
+    }
 
-      const hash = await argon.hash(dto.password);
-      const userRole = await this.prisma.role.findUnique({
-        where: {
-          id: 1,
-        },
-      });
-
-      const existingPhone = await this.prisma.user.findUnique({
-        where: {
-          phone: dto.phone,
-        },
-      });
-      if (existingPhone) {
-        throw new ForbiddenException('Phone number already taken');
-      }
-
-      const activationToken = await argon.hash(`${dto.email}+${dto.phone}`);
-      const cleanToken = activationToken.replaceAll('/', 'j');
-
-      const newUser = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          first_name: dto.first_name,
-          last_name: dto.last_name,
-          address: dto.address,
-          phone: dto.phone,
-          role_id: userRole.id,
-          password: hash,
-          token: cleanToken,
-        },
-      });
-
-      await this.emailService.sendUserConfirmation(newUser, cleanToken);
-      return 'Email sent with link to activate your account';
-    } catch (error) {
-      // Ici, tu peux gérer l'erreur comme tu le souhaites
-      // Par exemple, tu peux relancer l'erreur ou en créer une nouvelle
-      throw new InternalServerErrorException(
-        'An error occurred during signup process',
+    const userRole = await this.prisma.role.findFirst({
+      where: {
+        name: Roles.USER,
+      },
+    });
+    const existingPhone = await this.prisma.user.findUnique({
+      where: {
+        phone: dto.phone,
+      },
+    });
+    if (existingPhone) {
+      throw new ForbiddenException(
+        'Ce numéro de téléphone est déjà associé à un compte',
       );
     }
+    const activationToken = crypto.randomBytes(72).toString('hex');
+
+    const hashedPassword = await argon.hash(dto.password);
+    console.log(activationToken);
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        first_name: dto.first_name,
+        last_name: dto.last_name,
+        address: dto.address,
+        phone: dto.phone,
+        role_id: userRole.id,
+        password: hashedPassword,
+        token: activationToken,
+      },
+    });
+    await this.emailService.sendUserConfirmation(newUser, activationToken);
+    return 'Veuillez cliquer sur le lien reçu par mail pour activer votre compte';
   }
 
   async signin(dto: SigninDto) {
@@ -123,19 +76,22 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new ForbiddenException('Invalid crendentials');
+      throw new ForbiddenException('Email inconnu');
     }
     if (user.is_active === false) {
-      throw new ForbiddenException('Inactive account');
+      throw new ForbiddenException('Compte inactif');
     }
     const isValidPassword = await argon.verify(user.password, dto.password);
     if (!isValidPassword) {
-      throw new ForbiddenException('Invalid crendentials');
+      throw new ForbiddenException('Mot de passe incorrect');
     }
+
     const token = await this.signToken(user.id);
     return {
+      statusCode: 201,
+      message: 'Connecté ! Redirection vers le profil',
       token,
-      isAdmin: user.role_id === 2,
+      isAdmin: user.role_id === 1,
       role: user.role_id,
     };
   }
@@ -144,17 +100,37 @@ export class AuthService {
     const payload = {
       sub: userId,
     };
-
     const secret = this.config.get('JWT_SECRET');
     const token = await this.jwt.signAsync(payload, {
       expiresIn: '30d',
       secret: secret,
     });
-
     return {
       access_token: token,
     };
   }
+
+  async activateAccount(token: string) {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        token: token,
+      },
+    });
+    if (!existingUser || existingUser.token === null) {
+      throw new ForbiddenException('Link expired');
+    }
+    await this.prisma.user.update({
+      where: {
+        id: existingUser.id,
+      },
+      data: {
+        token: null,
+        is_active: true,
+      },
+    });
+    return 'Account activate you can now log in';
+  }
+
   async resetPassword(dto: ResetPasswordDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
@@ -162,21 +138,24 @@ export class AuthService {
       },
     });
     if (!existingUser) {
-      throw new ForbiddenException('Email not found');
+      throw new ForbiddenException({
+        success: false,
+        message: 'Email introuvable',
+      });
     }
-    const activationToken = await argon.hash(
-      `${existingUser.email}+${existingUser.phone}`,
-    );
-    const cleanToken = activationToken.replaceAll('/', '');
+    const activationToken = crypto.randomBytes(72).toString('hex');
     const udpateUserToken = await this.prisma.user.update({
       where: {
         email: existingUser.email,
       },
       data: {
-        token: cleanToken,
+        token: activationToken,
       },
     });
-    await this.emailService.sendResetPassword(existingUser, cleanToken);
-    return 'Email sent with link to reset your password';
+    await this.emailService.sendResetPassword(existingUser, activationToken);
+    return {
+      success: true,
+      message: 'Un email de réinitialisation de mot de passe vous a été envoyé',
+    };
   }
 }

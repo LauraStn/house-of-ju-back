@@ -15,9 +15,10 @@ export class ImageGalleryService {
         ...dto,
       },
     });
-    console.log(newImage);
-
-    return newImage;
+    return {
+      success: true,
+      message: 'image ajoutée à la galerie',
+    };
   }
 
   getAllImages() {
@@ -42,6 +43,9 @@ export class ImageGalleryService {
         id: existingImage.id,
       },
     });
-    return 'Image deleted';
+    return {
+      success: true,
+      message: 'Image supprimée',
+    };
   }
 }
