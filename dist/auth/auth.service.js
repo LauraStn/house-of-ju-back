@@ -86,7 +86,7 @@ let AuthService = class AuthService {
             statusCode: 201,
             message: 'Connecté ! Redirection vers le profil',
             token,
-            isAdmin: user.role_id === 1,
+            isAdmin: user.role_id === 2,
             role: user.role_id,
         };
     }
