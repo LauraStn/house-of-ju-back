@@ -85,7 +85,8 @@ export class AuthService {
     if (!isValidPassword) {
       throw new ForbiddenException('Mot de passe incorrect');
     }
-
+    console.log("user", user);
+    
     const token = await this.signToken(user.id);
     return {
       statusCode: 201,

@@ -26,6 +26,7 @@ let AuthController = class AuthController {
         return this.authService.signup(dto);
     }
     signin(dto) {
+        console.log('dto', dto);
         return this.authService.signin(dto);
     }
     resetPassword(dto) {

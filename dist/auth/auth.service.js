@@ -81,6 +81,7 @@ let AuthService = class AuthService {
         if (!isValidPassword) {
             throw new common_1.ForbiddenException('Mot de passe incorrect');
         }
+        console.log("user", user);
         const token = await this.signToken(user.id);
         return {
             statusCode: 201,
