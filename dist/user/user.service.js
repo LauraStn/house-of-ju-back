@@ -33,14 +33,14 @@ let UserService = class UserService {
                 phone: true,
                 is_active: true,
                 role_id: true,
-                appointments: true
+                appointments: true,
             },
         });
     }
     async getOneUser(userId) {
         const userLogged = await this.prisma.user.findUnique({
             where: {
-                id: userId
+                id: userId,
             },
             select: {
                 id: true,
@@ -51,42 +51,42 @@ let UserService = class UserService {
                 phone: true,
                 is_active: true,
                 role_id: true,
-                appointments: true
+                appointments: true,
             },
         });
-        return { ...userLogged, isAdmin: userLogged.role_id === 1 };
+        return { ...userLogged, isAdmin: userLogged.role_id === 2 };
     }
     async updateUser(userId, dto) {
         const existingUser = await this.prisma.user.findUnique({
             where: {
-                id: userId
-            }
+                id: userId,
+            },
         });
         if (!existingUser || !existingUser.id) {
             throw new common_1.ForbiddenException('User not found');
         }
         await this.prisma.user.update({
             where: {
-                id: existingUser.id
+                id: existingUser.id,
             },
             data: {
-                ...dto
-            }
+                ...dto,
+            },
         });
     }
     async deleteUser(userId) {
         const existingUser = await this.prisma.user.findUnique({
             where: {
-                id: userId
-            }
+                id: userId,
+            },
         });
         if (!existingUser || !existingUser.id) {
             throw new common_1.ForbiddenException('User not found');
         }
         await this.prisma.user.delete({
             where: {
-                id: existingUser.id
-            }
+                id: existingUser.id,
+            },
         });
         return 'Account successfully deleted';
     }
